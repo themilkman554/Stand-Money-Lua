@@ -1,6 +1,6 @@
 --[[
 	abuazizv for the orginal rebound lua
-    ayim for transaction hash finder and better code
+    	ayim for transaction hash finder and 'better code'
 	decuwu for the money counter
 	gamecrunch 
 	big smoke
@@ -24,7 +24,7 @@ if not SCRIPT_SILENT_START then
     util.toast("WARNING: All features in this script are considered risky! There is a chance you will get banned within an unknown number of days (bans are delayed randomly). You have been warned.")
 end
 
-local currentMoney = MONEY.NETWORK_GET_VC_WALLET_BALANCE(util.get_char_slot()	)
+local currentMoney = MONEY.NETWORK_GET_VC_WALLET_BALANCE(util.get_char_slot())
 local moneyEarned = 0
 local moneyEarnedPerMinute = 0
 local startTime = 0
@@ -46,7 +46,6 @@ local function getElapsedSeconds()
     end
 end
 
-
 local function addCommas(number)
     local numberString = tostring(number)
     local decimalIndex = string.find(numberString, "%.")
@@ -62,6 +61,10 @@ local function addCommas(number)
     return formattedString
 end
 
+
+local yield = util.yield
+local overlay, displayTime, displayEarned, displayEarnedPerHour, displayEarnedPerMin, displayEarnedPerSec = false, false, false, false, false, false
+
 local function checkEarned(amount)
     if overlay then
         if MONEY.NETWORK_GET_VC_WALLET_BALANCE(util.get_char_slot()) > 2147483640 then
@@ -71,7 +74,7 @@ local function checkEarned(amount)
             repeat
                 wallet = MONEY.NETWORK_GET_VC_WALLET_BALANCE(util.get_char_slot())
                 NETSHOPPING.NET_GAMESERVER_TRANSFER_WALLET_TO_BANK(util.get_char_slot(), wallet)
-                util.yield()
+                yield()
             until wallet == 0
             wait = false
             util.toast("Continuing loop")
@@ -105,93 +108,85 @@ local function amountPerSecond(moneyEarned)
     return moneyEarnedPerMinute
 end
 
-local function to_rgb(r, g, b, a)
-    return {r, g, b, a}
-end
-
 local currentColor = {r=1.0, g=1.0, b=1.0, a=1.0}
 
+local debug = util.draw_debug_text
 local function draw_stats()
     if overlay then
 
         if displayTime then
-            directx.draw_text(0.9, 0.20, "Seconds Elapsed:" .. getElapsedSeconds(), 1, 0.7, currentColor, true)
+            debug("Seconds Elapsed:" .. getElapsedSeconds())
         end
 
         if displayEarned then
-            directx.draw_text(0.9, 0.22, "Money Earned: $" .. addCommas(moneyEarned), 1, 0.7, currentColor, true)
+            debug("Money Earned: $" .. addCommas(moneyEarned))
         end
 
         if displayEarnedPerHour then
-            directx.draw_text(0.9, 0.24, "Money/Hour: $" .. addCommas(amountPerHour(moneyEarned)), 1, 0.7, currentColor, true)
+            debug("Money/Hour: $" .. addCommas(amountPerHour(moneyEarned)))
         end
 
         if displayEarnedPerMin then
-            directx.draw_text(0.9, 0.26, "Money/Minute: $" .. addCommas(amountPerMinute(moneyEarned)), 1, 0.7, currentColor, true)
+            debug("Money/Minute: $" .. addCommas(amountPerMinute(moneyEarned)))
         end
 
         if displayEarnedPerSec then
-            directx.draw_text(0.9, 0.28, "Money/Second: $" .. addCommas(amountPerSecond(moneyEarned)), 1, 0.7, currentColor, true)
+            debug("Money/Second: $" .. addCommas(amountPerSecond(moneyEarned)))
         end
 
     end
     return "HANDLER_CONTINUE"
 end
 
+local global = 4536533
 
-function trigger_transaction(hash, amount)
-    SetGlobalInt(4536533+ 1, 2147483646)
-    SetGlobalInt(4536533+ 7, 2147483647)
-    SetGlobalInt(4536533+ 6, 0)
-    SetGlobalInt(4536533+ 5, 0)
-    SetGlobalInt(4536533+ 3, hash)
-    SetGlobalInt(4536533+ 2, amount)
-    SetGlobalInt(4536533,2)
+local function trigger_transaction(hash, amount)
+    SetGlobalInt(global + 1, 2147483646)
+    SetGlobalInt(global + 7, 2147483647)
+    SetGlobalInt(global + 6, 0)
+    SetGlobalInt(global + 5, 0)
+    SetGlobalInt(global + 3, hash)
+    SetGlobalInt(global + 2, amount)
+    SetGlobalInt(global,2)
 	checkEarned(amount)
-	end
+end
 	
+local my_root = menu.my_root()
+local limited = my_root:list("limited Transactions", {}, "")
+local loopSettings = my_root:list("Loop Settings", {}, "")
 
-local limted = menu.list(menu.my_root(), "Limted Transactions", {}, "")
-local loopSettings = menu.list(menu.my_root(), "Loop Settings", {}, "")
-
-overlay = false
-displayTime= false
-displayEarned= false
-displayEarnedPerHour= false
-displayEarnedPerMin= false
-displayEarnedPerSec= false
-menu.toggle(loopSettings, "Enable Overlay", {}, "", function(on) 
-overlay = on
+loopSettings:toggle("Enable Overlay", {}, "", function(on) 
+    overlay = on
 end)
 
-menu.toggle(loopSettings, "Display Elapsed Time", {}, "", function(on) 
-displayTime = on
+loopSettings:toggle("Display Elapsed Time", {}, "", function(on) 
+    displayTime = on
 end)
 
-menu.toggle(loopSettings, "Display Total Earned", {}, "", function(on) 
-displayEarned = on
+loopSettings:toggle("Display Total Earned", {}, "", function(on) 
+    displayEarned = on
 end)
 
-menu.toggle(loopSettings, "Display Earned Per Hour", {}, "", function(on) 
-displayEarnedPerHour = on
+loopSettings:toggle("Display Earned Per Hour", {}, "", function(on) 
+    displayEarnedPerHour = on
 end)
 
-menu.toggle(loopSettings, "Display Earned Per Minute", {},  "", function(on) 
-displayEarnedPerMin = on
+loopSettings:toggle("Display Earned Per Minute", {},  "", function(on) 
+    displayEarnedPerMin = on
 end)
 
- menu.toggle(loopSettings, "Display Earned Per Second", {}, "", function(on) 
-displayEarnedPerSec = on
+loopSettings:toggle("Display Earned Per Second", {}, "", function(on) 
+    displayEarnedPerSec = on
 end)
 
-menu.colour(loopSettings, "Choose Color", {}, "Choose a color for the text", 1.0, 1.0, 1.0, 1.0, true, function(newColor)
+loopSettings:colour("Choose Color", {}, "Choose a color for the text", 1.0, 1.0, 1.0, 1.0, true, function(newColor)
     currentColor = newColor
 end)
 
 util.create_thread(function()
     while true do
 	draw_stats()
-	util.yield(0)
+	yield(0)
     end
 end)
 
@@ -215,7 +210,7 @@ local function stopLoop()
     state.on = false
 end
 
-menu.toggle(menu.my_root(), "1M Loop [BEST]", {}, "", function(on)
+my_root:toggle("1M Loop [BEST]", {}, "", function(on)
     if on then
         startTimer()
         startLoop()
@@ -226,45 +221,46 @@ menu.toggle(menu.my_root(), "1M Loop [BEST]", {}, "", function(on)
     end
 end)
 
-menu.toggle_loop(menu.my_root(),"50K Loop", {}, "", function()
+my_root:toggle_loop("50K Loop", {}, "", function()
     trigger_transaction(0x610F9AB4, 50000)
-	util.yield()
+	yield()
 end)
 
-menu.toggle_loop(menu.my_root(),"40m Loop [SLOW]", {}, "", function()
+my_root:toggle_loop("40m Loop [SLOW]", {}, "", function()
     trigger_transaction(0x176D9D54, 15000000)
-	util.yield(3000)
+	yield(3000)
 	trigger_transaction(0xED97AFC1, 7000000)
-	util.yield(3000)
+	yield(3000)
 	trigger_transaction(0xA174F633, 15000000)
-	util.yield(3000)
+	yield(3000)
 	trigger_transaction(0x314FB8B0, 1000000)
-	util.yield(3000)
+	yield(3000)
 	trigger_transaction(0x4B6A869C, 2000000)
-	util.yield(40000)
+	yield(40000)
 end)
 
-menu.toggle_loop(menu.my_root(),"5K Chip Loop", {}, "", function()
+my_root:toggle_loop("5K Chip Loop", {}, "", function()
     SetGlobalInt(1971266, 1)
-	util.yield(3000)
+	yield(3000)
 end)
 
 --from heist control
-menu.toggle_loop(menu.my_root(),"Block Transaction Errors", {}, "", function()
-            if not util.is_session_started() then return end
-            if GetGlobalInt(4536683) == 4 or 20 then
-                SetGlobalInt(4536677, 0)
-            end
-        end)
+my_root:toggle_loop("Block Transaction Errors", {}, "", function()
+    if not util.is_session_started() then return end
+    if GetGlobalInt(4536683) == 4 or 20 then
+        SetGlobalInt(4536677, 0)
+    end
+end)
 --credit to jesus is cap
-Opti = menu.toggle(menu.my_root(), "Optimised Settings", {""}, "Will hopefully Maximise your TPS and FPS", function()
+
+Opti = my_root:toggle("Optimised Settings", {""}, "Will hopefully Maximise your TPS and FPS", function()
 	if menu.get_value(Opti) then
 	menu.trigger_commands("potatomode on")
 	menu.trigger_commands("nosky on")
 	menu.trigger_commands("lodscale 0")
 	menu.trigger_commands("fovfponfoot 0")
 	menu.trigger_commands("fovtponfoot 0")
-	util.yield(100) GRAPHICS.TOGGLE_PAUSED_RENDERPHASES(on)
+	yield(100) GRAPHICS.TOGGLE_PAUSED_RENDERPHASES(on)
 	end
 	if not menu.get_value(Opti) then
 	menu.trigger_commands("potatomode off")
@@ -423,8 +419,7 @@ local Options = {
 }
 
 for i, v in ipairs(Options) do
-menu.action(limted,v.name, {}, "", function()
+    limited:action(v.name, {}, "", function()
         trigger_transaction(v.hash, v.amount)
     end)
 end
-
