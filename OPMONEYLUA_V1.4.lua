@@ -1,6 +1,6 @@
 --[[
 	abuazizv for the orginal rebound lua
-    	ayim for transaction hash finder and 'better code'
+    ayim for transaction hash finder and 'better code'
 	decuwu for the money counter
 	gamecrunch 
 	big smoke
@@ -24,12 +24,16 @@ if not SCRIPT_SILENT_START then
     util.toast("WARNING: All features in this script are considered risky! There is a chance you will get banned within an unknown number of days (bans are delayed randomly). You have been warned.")
 end
 
+local global = 4536533
 local currentMoney = MONEY.NETWORK_GET_VC_WALLET_BALANCE(util.get_char_slot())
 local moneyEarned = 0
 local moneyEarnedPerMinute = 0
 local startTime = 0
+local yield = util.yield
+local debug = util.draw_debug_text
 local wait = false
-	
+local overlay, displayTime, displayEarned, displayEarnedPerHour, displayEarnedPerMin, displayEarnedPerSec = false, false, false, false, false, false
+
 local function startTimer()
     startTime = os.time()
 end
@@ -61,10 +65,6 @@ local function addCommas(number)
     return formattedString
 end
 
-
-local yield = util.yield
-local overlay, displayTime, displayEarned, displayEarnedPerHour, displayEarnedPerMin, displayEarnedPerSec = false, false, false, false, false, false
-
 local function checkEarned(amount)
     if overlay then
         if MONEY.NETWORK_GET_VC_WALLET_BALANCE(util.get_char_slot()) > 2147483640 then
@@ -87,30 +87,17 @@ local function checkEarned(amount)
     end
 end 
 
-local function amountPerHour(moneyEarned)
-    if overlay then
-        moneyEarnedPerMinute = moneyEarned / getElapsedSeconds() * 3600
-    end
-    return moneyEarnedPerMinute
-end
-
-local function amountPerMinute(moneyEarned)
-    if overlay then
-        moneyEarnedPerMinute = moneyEarned / getElapsedSeconds() * 60
-    end
-    return moneyEarnedPerMinute
-end
-
 local function amountPerSecond(moneyEarned)
     if overlay then
         moneyEarnedPerMinute = moneyEarned / getElapsedSeconds()
     end
-    return moneyEarnedPerMinute
+    if moneyEarnedPerMinute >= 0 then
+        return moneyEarnedPerMinute
+    else
+        return 0
+    end
 end
 
-local currentColor = {r=1.0, g=1.0, b=1.0, a=1.0}
-
-local debug = util.draw_debug_text
 local function draw_stats()
     if overlay then
 
@@ -123,11 +110,11 @@ local function draw_stats()
         end
 
         if displayEarnedPerHour then
-            debug("Money/Hour: $" .. addCommas(amountPerHour(moneyEarned)))
+            debug("Money/Hour: $" .. addCommas(amountPerSecond(moneyEarned) * 3600))
         end
 
         if displayEarnedPerMin then
-            debug("Money/Minute: $" .. addCommas(amountPerMinute(moneyEarned)))
+            debug("Money/Minute: $" .. addCommas(amountPerSecond(moneyEarned) * 60))
         end
 
         if displayEarnedPerSec then
@@ -137,8 +124,6 @@ local function draw_stats()
     end
     return "HANDLER_CONTINUE"
 end
-
-local global = 4536533
 
 local function trigger_transaction(hash, amount)
     SetGlobalInt(global + 1, 2147483646)
@@ -185,8 +170,8 @@ end)
 
 util.create_thread(function()
     while true do
-	draw_stats()
-	yield(0)
+	    draw_stats()
+	    yield(0)
     end
 end)
 
