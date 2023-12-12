@@ -24,7 +24,7 @@ if not SCRIPT_SILENT_START then
     util.toast("WARNING: All features in this script are considered risky! There is a chance you will get banned within an unknown number of days (bans are delayed randomly). You have been warned.")
 end
 
-local global = 4536533
+local global = 4537212
 local currentMoney = MONEY.NETWORK_GET_VC_WALLET_BALANCE(util.get_char_slot())
 local moneyEarned = 0
 local moneyEarnedPerMinute = 0
@@ -225,7 +225,7 @@ my_root:toggle_loop("40m Loop [SLOW]", {}, "", function()
 end)
 
 my_root:toggle_loop("5K Chip Loop", {}, "", function()
-    SetGlobalInt(1971266, 1)
+    SetGlobalInt(1963515, 1)
 	yield(3000)
 end)
 
