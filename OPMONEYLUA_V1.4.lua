@@ -186,7 +186,7 @@ local function startLoop()
             until not wait
         end
 
-        trigger_transaction(0x615762F1, 1000000)
+        trigger_transaction(0x615762F1, 180000)
         coroutine.yield()
     end
 end
@@ -195,7 +195,7 @@ local function stopLoop()
     state.on = false
 end
 
-my_root:toggle("1M Loop [BEST]", {}, "", function(on)
+my_root:toggle("180k Loop [RISKY]", {}, "", function(on)
     if on then
         startTimer()
         startLoop()
