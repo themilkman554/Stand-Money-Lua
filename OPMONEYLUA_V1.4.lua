@@ -195,7 +195,7 @@ local function stopLoop()
     state.on = false
 end
 
-my_root:toggle("180k Loop [RISKY]", {}, "", function(on)
+my_root:toggle("180k Loop [RISKY/BAN VERY Likely]", {}, "", function(on)
     if on then
         startTimer()
         startLoop()
