@@ -24,7 +24,7 @@ if not SCRIPT_SILENT_START then
     util.toast("WARNING: All features in this script are considered risky! There is a chance you will get banned within an unknown number of days (bans are delayed randomly). You have been warned.")
 end
 
-local global = 4537212
+local global = 4537311
 local currentMoney = MONEY.NETWORK_GET_VC_WALLET_BALANCE(util.get_char_slot())
 local moneyEarned = 0
 local moneyEarnedPerMinute = 0
@@ -194,17 +194,6 @@ end
 local function stopLoop()
     state.on = false
 end
-
-my_root:toggle("180k Loop [RISKY/BAN VERY Likely]", {}, "", function(on)
-    if on then
-        startTimer()
-        startLoop()
-    else
-        moneyEarned = 0
-        stopTimer()
-        stopLoop()
-    end
-end)
 
 my_root:toggle_loop("50K Loop", {}, "", function()
     trigger_transaction(0x610F9AB4, 50000)
